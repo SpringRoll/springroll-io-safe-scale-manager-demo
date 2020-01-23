@@ -43,15 +43,6 @@ export class Demo {
                 safeHeight: this.resolutions.safeHeight,
                 callback: this.onSafeScaleResize.bind(this)
             });
-
-            setTimeout(() => {
-                this.onDemoVariableChanges({
-                    maxWidth: 1280,
-                    maxHeight: 800,
-                    safeWidth: 1024,
-                    safeHeight: 768
-                });
-            }, 5000);
         }
     }
 
