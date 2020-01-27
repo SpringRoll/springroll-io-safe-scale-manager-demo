@@ -2,10 +2,16 @@ import { Application, SafeScaleManager } from 'springroll';
 import { GameScene } from './Scenes/GameScene';
 
 const DEFAULTS = {
-    maxWidth: 1320,
-    maxHeight: 780,
-    safeWidth: 1024,
-    safeHeight: 660
+    resolutions: {
+        maxWidth: 1320,
+        maxHeight: 780,
+        safeWidth: 1024,
+        safeHeight: 660
+    },
+    anchor: {
+        position: { x: 0, y: 0 },
+        direction: { x: 0, y: 0 }
+    }
 }
 
 export class Demo {
@@ -17,7 +23,9 @@ export class Demo {
         // Instance of Phaser.Game
         this.game = undefined;
         // Reference to the resolutions being used for the demo.
-        this.resolutions = Object.assign({}, DEFAULTS);
+        this.resolutions = Object.assign({}, DEFAULTS.resolutions);
+        // Reference to the demo anchor variables.
+        this.anchor = Object.assign({}, DEFAULTS.anchor);
 
         // Listen for the application's ready event.
         this.app.state.ready.subscribe(this.onAppReady.bind(this));
@@ -30,7 +38,9 @@ export class Demo {
     onAppReady(isReady) {
         if (isReady) {
             // Listen for the applyChange event from the container.
-            this.app.container.on("applyChanges", this.onDemoVariableChanges.bind(this));
+            this.app.container.on("applyChanges", this.onDemoVariableChange.bind(this));
+            // Listen for the updateAnchor event from the container
+            this.app.container.on("updateAnchor", this.onDemoAnchorChange.bind(this));
 
             // First initialization of the game.
             this.initializeGame();
@@ -48,17 +58,22 @@ export class Demo {
 
     /**
      * Handler for when the demo variables are update in the container.
+     * This event handler will destroy and reinitialize the Phaser.Game instance.
      * @param {Object.<string, number>} data 
      */
-    onDemoVariableChanges(data) {
+    onDemoVariableChange(data) {
         // Make sure there is data to work with.
-        data = data || DEFAULTS;
+        data = data || Object.assign({}, DEFAULTS.resolutions);
 
         // Update references of the demo resolutions.
-        this.resolutions.maxWidth = data.maxWidth || DEFAULTS.maxWidth;
-        this.resolutions.maxHeight = data.maxHeight || DEFAULTS.maxHeight;
-        this.resolutions.safeWidth = data.safeWidth || DEFAULTS.safeWidth;
-        this.resolutions.safeHeight = data.safeHeight || DEFAULTS.safeHeight;
+        this.resolutions.maxWidth = data.maxWidth || DEFAULTS.resolutions.maxWidth;
+        this.resolutions.maxHeight = data.maxHeight || DEFAULTS.resolutions.maxHeight;
+        this.resolutions.safeWidth = data.safeWidth || DEFAULTS.resolutions.safeWidth;
+        this.resolutions.safeHeight = data.safeHeight || DEFAULTS.resolutions.safeHeight;
+
+        // Update references to the demo anchor.
+        this.anchor.direction = data.direction || DEFAULTS.anchor.direction;
+        this.anchor.position = data.position || DEFAULTS.anchor.position;
 
         this.validateResolutions();
 
@@ -70,6 +85,28 @@ export class Demo {
 
         // Initialize a new game with the updated resolutions.
         this.initializeGame();
+    }
+
+    /**
+     * Handler for when the demo anchor variables are update in the container.
+     * This event handler will dispatch an updateAnchor event to the Phaser.Game instance.
+     * @param {Object.<string, number>} data 
+     */
+    onDemoAnchorChange(data) {
+        // Sanitize the data coming from the container.
+        data = data || Object.assign({}, DEFAULTS.anchor);
+
+        this.anchor.direction.x = data.direction.x || DEFAULTS.anchor.direction.x;
+        this.anchor.direction.y = data.direction.y || DEFAULTS.anchor.direction.y;
+        this.anchor.position.x = data.position.x || DEFAULTS.anchor.position.x;
+        this.anchor.position.y = data.position.y || DEFAULTS.anchor.position.y;
+
+        // If the game has been initialized, then forward the updateAnchor event.
+        if (this.game !== undefined) {
+            this.game.events.emit("updateAnchor");
+            // Force a window resize event so the anchors refresh.
+            window.dispatchEvent(new Event("resize"));
+        }
     }
 
     /**
@@ -107,7 +144,7 @@ export class Demo {
      */
     validateResolutions() {
         // Note: These min/max checks happen in the SafeScaleManager constructor.
-        //       However because we don't create a new manager, we need to manually
+        //       However because we don't create a new safe scale manager, we need to manually
         //       do these checks when the demo resolutions change.
 
         const maxWidth = Math.max(this.resolutions.maxWidth, this.resolutions.safeWidth);

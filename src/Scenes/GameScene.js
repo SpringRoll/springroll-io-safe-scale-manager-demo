@@ -2,6 +2,10 @@ import { demo } from "..";
 import { Anchor } from "springroll";
 
 export class GameScene extends Phaser.Scene {
+    preload() {
+        this.load.image("logo", "./assets/Springroll-Logo.png");
+    }
+
     create() {
         this.resolutionArea = this.add.graphics();
 
@@ -14,6 +18,8 @@ export class GameScene extends Phaser.Scene {
         this.resolutionArea.lineStyle(2, 0x00ff00, 0.5);
         this.resolutionArea.strokeRect(1 + (max.x - min.x) / 2, 1 + (max.y - min.y) / 2, (min.x - 1) - 2, (min.y - 1) - 2);
 
+        this.logoImg = this.add.image(0, 0, "logo");
+
         // Display the screen resolutions.
         this.resolutionDisplay = this.add.text(0, 0, this.getResolutionText(), { color: "#ffffff" });
 
@@ -25,10 +31,19 @@ export class GameScene extends Phaser.Scene {
             callback: this.onTextAnchorResize.bind(this)
         });
 
+        this.logoAnchor = new Anchor({
+            position: { x: -300, y: 10 },
+            direction: { x: 0, y: 0 },
+            callback: this.onLogoAnchorResize.bind(this)
+        })
+
         demo.safeScale.addEntity(this.textAnchor);
+        demo.safeScale.addEntity(this.logoAnchor);
 
         // Listen for destroy instead of shutdown because the demo destroys the game.
         this.events.on("destroy", this.destroy, this);
+        // List for the updateAnchor event from the game object.
+        this.game.events.on("updateAnchor", this.onUpdateDemoAnchor, this);
     }
 
     destroy() {
@@ -40,9 +55,17 @@ export class GameScene extends Phaser.Scene {
 
     onTextAnchorResize({ x, y }) {
         // Update the text position and the resolutions it shows.
-        this.resolutionDisplay.x = x;
-        this.resolutionDisplay.y = y;
+        this.resolutionDisplay.setPosition(x, y);
         this.resolutionDisplay.text = this.getResolutionText();
+    }
+
+    onLogoAnchorResize({ x, y }) {
+        this.logoImg.setPosition(x, y);
+    }
+
+    onUpdateDemoAnchor() {
+        this.logoAnchor.position = demo.anchor.position;
+        this.logoAnchor.direction = demo.anchor.direction;
     }
 
     getResolutionText() {
