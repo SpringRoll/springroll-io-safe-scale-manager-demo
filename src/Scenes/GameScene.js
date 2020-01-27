@@ -32,8 +32,8 @@ export class GameScene extends Phaser.Scene {
         });
 
         this.logoAnchor = new Anchor({
-            position: { x: -300, y: 10 },
-            direction: { x: 0, y: 0 },
+            position: demo.anchor.position,
+            direction: demo.anchor.direction,
             callback: this.onLogoAnchorResize.bind(this)
         })
 
