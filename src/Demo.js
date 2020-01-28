@@ -59,11 +59,13 @@ export class Demo {
     /**
      * Handler for when the demo variables are update in the container.
      * This event handler will destroy and reinitialize the Phaser.Game instance.
-     * @param {Object.<string, number>} data 
+     * @param {Object.<string, number>} e 
      */
-    onDemoVariableChange(data) {
+    onDemoVariableChange(e) {
+        e = e || {};
+        
         // Make sure there is data to work with.
-        data = data || Object.assign({}, DEFAULTS.resolutions);
+        const data = e.data || Object.assign({}, DEFAULTS.resolutions);
 
         // Update references of the demo resolutions.
         this.resolutions.maxWidth = data.maxWidth || DEFAULTS.resolutions.maxWidth;
@@ -90,11 +92,16 @@ export class Demo {
     /**
      * Handler for when the demo anchor variables are update in the container.
      * This event handler will dispatch an updateAnchor event to the Phaser.Game instance.
-     * @param {Object.<string, number>} data 
+     * @param {Object.<string, number>} e 
      */
-    onDemoAnchorChange(data) {
+    onDemoAnchorChange(e) {
+        e = e || {};
+
         // Sanitize the data coming from the container.
-        data = data || Object.assign({}, DEFAULTS.anchor);
+        const data = e.data || Object.assign({}, DEFAULTS.anchor);
+
+        data.direction = data.direction || DEFAULTS.anchor.direction;
+        data.position = data.position || DEFAULTS.anchor.position;
 
         this.anchor.direction.x = data.direction.x || DEFAULTS.anchor.direction.x;
         this.anchor.direction.y = data.direction.y || DEFAULTS.anchor.direction.y;
@@ -137,6 +144,9 @@ export class Demo {
             height: this.resolutions.maxHeight,
             scene: GameScene
         });
+
+        // Force a window resize event.
+        window.dispatchEvent(new Event("resize"));
     }
 
     /**
