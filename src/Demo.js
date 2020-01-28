@@ -62,20 +62,15 @@ export class Demo {
      * @param {Object.<string, number>} e 
      */
     onDemoVariableChange(e) {
-        e = e || {};
+        this.resolutions.maxWidth = getElse([e, "data", "maxWidth"], DEFAULTS.resolutions.maxWidth);
+        this.resolutions.maxHeight = getElse([e, "data", "maxHeight"], DEFAULTS.resolutions.maxHeight);
+        this.resolutions.safeWidth = getElse([e, "data", "safeWidth"], DEFAULTS.resolutions.safeWidth);
+        this.resolutions.safeHeight = getElse([e, "data", "safeHeight"], DEFAULTS.resolutions.safeHeight);
         
-        // Make sure there is data to work with.
-        const data = e.data || Object.assign({}, DEFAULTS.resolutions);
-
-        // Update references of the demo resolutions.
-        this.resolutions.maxWidth = data.maxWidth || DEFAULTS.resolutions.maxWidth;
-        this.resolutions.maxHeight = data.maxHeight || DEFAULTS.resolutions.maxHeight;
-        this.resolutions.safeWidth = data.safeWidth || DEFAULTS.resolutions.safeWidth;
-        this.resolutions.safeHeight = data.safeHeight || DEFAULTS.resolutions.safeHeight;
-
-        // Update references to the demo anchor.
-        this.anchor.direction = data.direction || DEFAULTS.anchor.direction;
-        this.anchor.position = data.position || DEFAULTS.anchor.position;
+        this.anchor.direction.x = getElse([e, "data", "direction", "x"], DEFAULTS.anchor.direction.x);
+        this.anchor.direction.y = getElse([e, "data", "direction", "y"], DEFAULTS.anchor.direction.y);
+        this.anchor.position.x = getElse([e, "data", "position", "x"], DEFAULTS.anchor.position.x);
+        this.anchor.position.y = getElse([e, "data", "position", "y"], DEFAULTS.anchor.position.y);
 
         this.validateResolutions();
 
@@ -95,18 +90,10 @@ export class Demo {
      * @param {Object.<string, number>} e 
      */
     onDemoAnchorChange(e) {
-        e = e || {};
-
-        // Sanitize the data coming from the container.
-        const data = e.data || Object.assign({}, DEFAULTS.anchor);
-
-        data.direction = data.direction || DEFAULTS.anchor.direction;
-        data.position = data.position || DEFAULTS.anchor.position;
-
-        this.anchor.direction.x = data.direction.x || DEFAULTS.anchor.direction.x;
-        this.anchor.direction.y = data.direction.y || DEFAULTS.anchor.direction.y;
-        this.anchor.position.x = data.position.x || DEFAULTS.anchor.position.x;
-        this.anchor.position.y = data.position.y || DEFAULTS.anchor.position.y;
+        this.anchor.direction.x = getElse([e, "data", "direction", "x"], DEFAULTS.anchor.direction.x);
+        this.anchor.direction.y = getElse([e, "data", "direction", "y"], DEFAULTS.anchor.direction.y);
+        this.anchor.position.x = getElse([e, "data", "position", "x"], DEFAULTS.anchor.position.x);
+        this.anchor.position.y = getElse([e, "data", "position", "y"], DEFAULTS.anchor.position.y);
 
         // If the game has been initialized, then forward the updateAnchor event.
         if (this.game !== undefined) {
@@ -167,4 +154,20 @@ export class Demo {
         this.resolutions.safeWidth = minWidth;
         this.resolutions.safeHeight = minHeight;
     }
+}
+
+function getElse(path, fallback) {
+    const exists = (val) => val !== undefined && val !== null;
+
+    let i;
+    let j;
+    i = path.shift();
+    while (path.length > 0) {
+        j = path.shift();
+        if (!exists(i) || !exists(j) || !exists(i[j])) {
+            return fallback;
+        }
+        i = i[j];
+    }
+    return i;
 }
