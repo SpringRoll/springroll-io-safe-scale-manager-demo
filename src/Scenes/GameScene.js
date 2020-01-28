@@ -75,7 +75,15 @@ export class GameScene extends Phaser.Scene {
             `Safe Width: ${demo.resolutions.safeWidth}\n` +
             `Safe Height: ${demo.resolutions.safeHeight}\n\n` +
             `Window Width: ${window.innerWidth}\n` +
-            `Window Height: ${window.innerHeight}\n`
+            `Window Height: ${window.innerHeight}\n\n`+
+            `View X: ${Math.round(demo.safeScale.viewArea.x * 100) / 100}\n`+
+            `View Y: ${Math.round(demo.safeScale.viewArea.y * 100) / 100}\n`+
+            `View Width: ${Math.round(demo.safeScale.viewArea.width * 100) / 100}\n`+
+            `View Height: ${Math.round(demo.safeScale.viewArea.height * 100) / 100}\n\n`+
+            `View Left: ${Math.round(demo.safeScale.viewArea.left * 100) / 100}\n`+
+            `View Right: ${Math.round(demo.safeScale.viewArea.right * 100) / 100}\n`+
+            `View Top: ${Math.round(demo.safeScale.viewArea.top * 100) / 100}\n`+
+            `View Bottom: ${Math.round(demo.safeScale.viewArea.bottom * 100) / 100}\n`
         );
     }
 }
