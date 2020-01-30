@@ -59,18 +59,29 @@ export class Demo {
     /**
      * Handler for when the demo variables are update in the container.
      * This event handler will destroy and reinitialize the Phaser.Game instance.
-     * @param {Object.<string, number>} e 
+     * @param {Object} e 
+     * @param {Object} e.data 
+     * @param {number} e.data.maxWidth
+     * @param {number} e.data.maxHeight
+     * @param {number} e.data.safeWidth
+     * @param {number} e.data.safeHeight
+     * @param {Object} e.data.position
+     * @param {number} e.data.position.x
+     * @param {number} e.data.position.y
+     * @param {Object} e.data.direction
+     * @param {number} e.data.direction.x
+     * @param {number} e.data.direction.y
      */
     onDemoVariableChange(e) {
-        this.resolutions.maxWidth = getElse([e, "data", "maxWidth"], DEFAULTS.resolutions.maxWidth);
-        this.resolutions.maxHeight = getElse([e, "data", "maxHeight"], DEFAULTS.resolutions.maxHeight);
-        this.resolutions.safeWidth = getElse([e, "data", "safeWidth"], DEFAULTS.resolutions.safeWidth);
-        this.resolutions.safeHeight = getElse([e, "data", "safeHeight"], DEFAULTS.resolutions.safeHeight);
+        this.resolutions.maxWidth = getValue(e, "data.maxWidth", DEFAULTS.resolutions.maxWidth);
+        this.resolutions.maxHeight = getValue(e, "data.maxHeight", DEFAULTS.resolutions.maxHeight);
+        this.resolutions.safeWidth = getValue(e, "data.safeWidth", DEFAULTS.resolutions.safeWidth);
+        this.resolutions.safeHeight = getValue(e, "data.safeHeight", DEFAULTS.resolutions.safeHeight);
         
-        this.anchor.direction.x = getElse([e, "data", "direction", "x"], DEFAULTS.anchor.direction.x);
-        this.anchor.direction.y = getElse([e, "data", "direction", "y"], DEFAULTS.anchor.direction.y);
-        this.anchor.position.x = getElse([e, "data", "position", "x"], DEFAULTS.anchor.position.x);
-        this.anchor.position.y = getElse([e, "data", "position", "y"], DEFAULTS.anchor.position.y);
+        this.anchor.direction.x = getValue(e, "data.direction.x", DEFAULTS.anchor.direction.x);
+        this.anchor.direction.y = getValue(e, "data.direction.y", DEFAULTS.anchor.direction.y);
+        this.anchor.position.x = getValue(e, "data.position.x", DEFAULTS.anchor.position.x);
+        this.anchor.position.y = getValue(e, "data.position.y", DEFAULTS.anchor.position.y);
 
         this.validateResolutions();
 
@@ -87,13 +98,20 @@ export class Demo {
     /**
      * Handler for when the demo anchor variables are update in the container.
      * This event handler will dispatch an updateAnchor event to the Phaser.Game instance.
-     * @param {Object.<string, number>} e 
+     * @param {Object} e 
+     * @param {Object} e.data 
+     * @param {Object} e.data.position
+     * @param {number} e.data.position.x
+     * @param {number} e.data.position.y
+     * @param {Object} e.data.direction
+     * @param {number} e.data.direction.x
+     * @param {number} e.data.direction.y
      */
     onDemoAnchorChange(e) {
-        this.anchor.direction.x = getElse([e, "data", "direction", "x"], DEFAULTS.anchor.direction.x);
-        this.anchor.direction.y = getElse([e, "data", "direction", "y"], DEFAULTS.anchor.direction.y);
-        this.anchor.position.x = getElse([e, "data", "position", "x"], DEFAULTS.anchor.position.x);
-        this.anchor.position.y = getElse([e, "data", "position", "y"], DEFAULTS.anchor.position.y);
+        this.anchor.direction.x = getValue(e, "data.direction.x", DEFAULTS.anchor.direction.x);
+        this.anchor.direction.y = getValue(e, "data.direction.y", DEFAULTS.anchor.direction.y);
+        this.anchor.position.x = getValue(e, "data.position.x", DEFAULTS.anchor.position.x);
+        this.anchor.position.y = getValue(e, "data.position.y", DEFAULTS.anchor.position.y);
 
         // If the game has been initialized, then forward the updateAnchor event.
         if (this.game !== undefined) {
@@ -156,16 +174,17 @@ export class Demo {
     }
 }
 
-function getElse(path, fallback) {
+function getValue(obj, pathToValue, defaultValue) {
     const exists = (val) => val !== undefined && val !== null;
 
-    let i;
+    let i = obj;
     let j;
-    i = path.shift();
-    while (path.length > 0) {
-        j = path.shift();
+
+    pathToValue = pathToValue.split(".");
+    while (pathToValue.length > 0) {
+        j = pathToValue.shift();
         if (!exists(i) || !exists(j) || !exists(i[j])) {
-            return fallback;
+            return defaultValue;
         }
         i = i[j];
     }
